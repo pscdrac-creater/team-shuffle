@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Team Shuffle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EFF3F6">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0F151B">
+<style>
+  :root {
+    --bg: #EFF3F6;
+    --surface: #FFFFFF;
+    --surface-2: #E4EAEF;
+    --ink: #17222C;
+    --ink-soft: #5A6B7A;
+    --line: #D4DDE4;
+    --go: #149A55;
+    --go-press: #0F7E45;
+    --go-ink: #FFFFFF;
+    --danger: #C7452F;
+    --team-1: #C7452F;
+    --team-2: #2E6FBF;
+    --team-3: #B77A00;
+    --team-4: #6E56C4;
+    --team-5: #278A54;
+    --team-6: #B8408E;
+    --shadow: 0 1px 2px rgba(23, 34, 44, .06), 0 4px 16px rgba(23, 34, 44, .05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F151B;
+      --surface: #18212A;
+      --surface-2: #222E39;
+      --ink: #E9EEF3;
+      --ink-soft: #8FA1B0;
+      --line: #2B3844;
+      --go: #17AA61;
+      --go-press: #128A4E;
+      --go-ink: #FFFFFF;
+      --danger: #E86A56;
+      --team-1: #D95B45;
+      --team-2: #3E82D6;
+      --team-3: #C98A0B;
+      --team-4: #8570D6;
+      --team-5: #2FA065;
+      --team-6: #CC569F;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F151B;
+    --surface: #18212A;
+    --surface-2: #222E39;
+    --ink: #E9EEF3;
+    --ink-soft: #8FA1B0;
+    --line: #2B3844;
+    --go: #17AA61;
+    --go-press: #128A4E;
+    --go-ink: #FFFFFF;
+    --danger: #E86A56;
+    --team-1: #D95B45;
+    --team-2: #3E82D6;
+    --team-3: #C98A0B;
+    --team-4: #8570D6;
+    --team-5: #2FA065;
+    --team-6: #CC569F;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .25);
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  .app {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  header { padding: 6px 4px 2px; }
+  .wordmark {
+    margin: 0;
+    font-size: clamp(26px, 7vw, 32px);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .wordmark .accent { color: var(--go); }
+  .tagline {
+    margin: 6px 0 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--ink-soft);
+  }
+  .count {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chips:empty { display: none; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    background: var(--surface-2);
+    color: var(--ink);
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    max-width: 100%;
+  }
+  .chip span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chip .x {
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1;
+    flex: none;
+  }
+  .chip:active { transform: scale(.95); }
+
+  .input-row { display: flex; gap: 8px; }
+  .name-input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    outline: none;
+  }
+  .name-input:focus { border-color: var(--go); }
+  .name-input::placeholder { color: var(--ink-soft); opacity: .7; }
+  .add-btn {
+    flex: none;
+    width: 48px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .add-btn:active { background: var(--line); }
+  .hint {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .clear-btn {
+    border: 0;
+    background: none;
+    padding: 2px 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--danger);
+    cursor: pointer;
+  }
+  .save-btn {
+    border: 0;
+    background: none;
+    padding: 2px 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--go);
+    cursor: pointer;
+  }
+  .save-form { display: flex; gap: 8px; }
+  .save-confirm {
+    flex: none;
+    border: 0;
+    border-radius: 12px;
+    padding: 0 18px;
+    background: var(--go);
+    color: var(--go-ink);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .save-confirm:active { background: var(--go-press); }
+
+  .saved-lists { display: flex; flex-wrap: wrap; gap: 8px; }
+  .saved-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    max-width: 100%;
+  }
+  .saved-pill[data-active] {
+    border-color: var(--go);
+    box-shadow: inset 0 0 0 1px var(--go);
+  }
+  .saved-pill .n {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .saved-pill .x { color: var(--ink-soft); font-size: 14px; }
+  .saved-pill:active { transform: scale(.96); }
+
+  .mode-rows { display: flex; flex-direction: column; gap: 8px; }
+  .mode-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    cursor: pointer;
+  }
+  .mode-row[data-active] {
+    border-color: var(--go);
+    box-shadow: inset 0 0 0 1px var(--go);
+  }
+  .mode-row:focus-visible { outline: 2px solid var(--go); outline-offset: 2px; }
+  .mode-dot {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+  }
+  .mode-row[data-active] .mode-dot {
+    border-color: var(--go);
+    background: var(--go);
+    box-shadow: inset 0 0 0 3px var(--surface);
+  }
+  .mode-name { flex: 1; font-size: 15px; font-weight: 700; }
+  .mode-row:not([data-active]) .mode-name { color: var(--ink-soft); }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stepper button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .stepper button:disabled { opacity: .35; }
+  .stepper .value {
+    min-width: 40px;
+    text-align: center;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .mode-row:not([data-active]) .stepper .value { color: var(--ink-soft); }
+
+  .preview {
+    margin: 0;
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    min-height: 1.3em;
+  }
+  .preview strong { color: var(--ink); font-weight: 700; }
+
+  .go-btn {
+    border: 0;
+    border-radius: 18px;
+    padding: 18px;
+    background: var(--go);
+    color: var(--go-ink);
+    font: inherit;
+    font-size: 22px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .1s ease, opacity .15s ease;
+  }
+  .go-btn:active { background: var(--go-press); transform: scale(.97); }
+  .go-btn:disabled {
+    opacity: .45;
+    cursor: default;
+    transform: none;
+  }
+
+  .results { display: flex; flex-direction: column; gap: 12px; }
+  .results[hidden] { display: none; }
+  .summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  .summary {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .actions { display: flex; gap: 8px; }
+  .actions button {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .actions button:active { background: var(--surface-2); }
+
+  .team-card {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+  .team-card .badge {
+    grid-row: 1 / span 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--hue);
+    color: #FFFFFF;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .team-card .team-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--ink-soft);
+  }
+  .team-card .short-tag {
+    background: var(--surface-2);
+    color: var(--danger);
+    padding: 2px 7px;
+    border-radius: 999px;
+    letter-spacing: .06em;
+  }
+  .team-card .members {
+    grid-column: 2 / span 2;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .team-card .members .sep { color: var(--hue); font-weight: 400; padding: 0 2px; }
+  .team-card .size-tag {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .deal { opacity: 0; transform: translateY(16px) scale(.98); }
+  .deal.in {
+    opacity: 1;
+    transform: none;
+    transition: opacity .35s ease, transform .35s cubic-bezier(.2, .9, .3, 1.2);
+    transition-delay: calc(var(--i) * 80ms);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deal { opacity: 1; transform: none; }
+    .deal.in { transition: none; }
+    .go-btn { transition: none; }
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 10;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%); }
+
+  .selftest {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .selftest.pass { border-color: var(--go); color: var(--go); }
+  .selftest.fail { border-color: var(--danger); color: var(--danger); }
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Team Shuffle">
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1 class="wordmark">Team <span class="accent">Shuffle</span></h1>
+    <p class="tagline">Type names, hit GO, get fair random teams.</p>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <span class="label">Names</span>
+      <span class="count" id="name-count">0 names</span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="input-row">
+      <input class="name-input" id="name-input" type="text" autocomplete="off"
+             autocapitalize="words" enterkeyhint="done" placeholder="Add a name…">
+      <button class="add-btn" id="add-btn" aria-label="Add name">+</button>
+    </div>
+    <p class="hint">Press Enter after each name — or paste a whole list separated by commas.</p>
+    <div class="list-actions">
+      <button class="clear-btn" id="clear-btn" hidden>Clear all</button>
+      <button class="save-btn" id="save-btn" hidden>Save list…</button>
+    </div>
+    <div class="save-form" id="save-form" hidden>
+      <input class="name-input" id="list-name-input" type="text" autocomplete="off"
+             autocapitalize="words" enterkeyhint="done" placeholder="List name (e.g. Saturday badminton)">
+      <button class="save-confirm" id="save-confirm">Save</button>
+    </div>
+  </section>
+
+  <section class="panel" id="saved-panel" hidden>
+    <div class="panel-head"><span class="label">Saved lists</span><span class="count">tap to load</span></div>
+    <div class="saved-lists" id="saved-lists"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><span class="label">Split into</span></div>
+    <div class="mode-rows" role="radiogroup" aria-label="Split mode">
+      <div class="mode-row" id="row-size" role="radio" aria-checked="true" tabindex="0" data-active>
+        <span class="mode-dot"></span>
+        <span class="mode-name">Teams of</span>
+        <div class="stepper">
+          <button id="size-minus" aria-label="Smaller teams">−</button>
+          <div class="value" id="size-value">2</div>
+          <button id="size-plus" aria-label="Bigger teams">+</button>
+        </div>
+      </div>
+      <div class="mode-row" id="row-count" role="radio" aria-checked="false" tabindex="0">
+        <span class="mode-dot"></span>
+        <span class="mode-name">No. of teams</span>
+        <div class="stepper">
+          <button id="count-minus" aria-label="Fewer teams">−</button>
+          <div class="value" id="count-value">2</div>
+          <button id="count-plus" aria-label="More teams">+</button>
+        </div>
+      </div>
+    </div>
+    <p class="preview" id="preview"></p>
+  </section>
+
+  <button class="go-btn" id="go-btn" disabled>Go</button>
+
+  <section class="results" id="results" hidden>
+    <div class="summary-bar">
+      <p class="summary" id="summary"></p>
+      <div class="actions">
+        <button id="copy-btn">Copy</button>
+        <button id="share-btn" hidden>Share</button>
+      </div>
+    </div>
+    <div id="team-list"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  'use strict';
+
+  // ---------- Pure logic ----------
+
+  function randInt(n) {
+    if (n <= 1) return 0;
+    if (window.crypto && crypto.getRandomValues) {
+      const limit = Math.floor(0x100000000 / n) * n;
+      const buf = new Uint32Array(1);
+      let x;
+      do { crypto.getRandomValues(buf); x = buf[0]; } while (x >= limit);
+      return x % n;
+    }
+    return Math.floor(Math.random() * n);
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = randInt(i + 1);
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // Teams of `size`; leftover names form one final short team.
+  function splitBySize(names, size) {
+    const teams = [];
+    for (let i = 0; i < names.length; i += size) teams.push(names.slice(i, i + size));
+    return teams;
+  }
+
+  // `count` teams, dealt round-robin so sizes differ by at most one.
+  function splitByCount(names, count) {
+    const teams = Array.from({ length: count }, () => []);
+    names.forEach((name, i) => teams[i % count].push(name));
+    return teams;
+  }
+
+  function parseNames(text) {
+    return text.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+  }
+
+  // ---------- Keep-apart rule ----------
+
+  // Pairs of names that are never placed on the same team; after each
+  // shuffle, members are swapped between teams until every pair is
+  // separated. Matching is fuzzy — case, punctuation, doubled letters,
+  // and small misspellings of either name count as the same person.
+  const KEEP_APART = [['Piyush', 'Danish']];
+
+  // Example list shown the first time the app is opened.
+  const DEFAULT_NAMES = ['Anuj', 'Akshay', 'Vivek', 'Piyush', 'Kshitiz', 'Sudarshan', 'Danish', 'Amrit'];
+
+  function normName(name) {
+    return name.toLowerCase().replace(/[^a-z]/g, '').replace(/(.)\1+/g, '$1');
+  }
+
+  function editDistance(a, b) {
+    const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      let prev = row[0];
+      row[0] = i;
+      for (let j = 1; j <= b.length; j++) {
+        const above = row[j];
+        row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = above;
+      }
+    }
+    return row[b.length];
+  }
+
+  // Same first letter + edit distance ≤ 2 (after normalising) so close
+  // variants match without catching unrelated names like Manish/Ganesh.
+  function matchesKeepApartName(name, target) {
+    const n = normName(name), t = normName(target);
+    if (!n) return false;
+    return n === t || (n[0] === t[0] && editDistance(n, t) <= 2);
+  }
+
+  function keepApartConflict(team) {
+    for (const [a, b] of KEEP_APART) {
+      const ia = team.findIndex(m => matchesKeepApartName(m, a));
+      const ib = team.findIndex(m => matchesKeepApartName(m, b));
+      if (ia !== -1 && ib !== -1 && ia !== ib) return { index: ib };
+    }
+    return null;
+  }
+
+  // Swap one offender with a random member of another team, accepting
+  // only swaps that leave both teams conflict-free. Team sizes and the
+  // full name set are preserved; with a single team nothing can move.
+  function enforceKeepApart(teams) {
+    if (teams.length < 2) return teams;
+    const out = teams.map(t => t.slice());
+    for (let guard = 0; guard < 20; guard++) {
+      const ti = out.findIndex(t => keepApartConflict(t));
+      if (ti === -1) break;
+      const mi = keepApartConflict(out[ti]).index;
+      const spots = [];
+      out.forEach((t, j) => { if (j !== ti) t.forEach((_, k) => spots.push([j, k])); });
+      let swapped = false;
+      for (const [j, k] of shuffle(spots)) {
+        const a = out[ti][mi], b = out[j][k];
+        out[ti][mi] = b; out[j][k] = a;
+        if (!keepApartConflict(out[ti]) && !keepApartConflict(out[j])) { swapped = true; break; }
+        out[ti][mi] = a; out[j][k] = b;
+      }
+      if (!swapped) break;
+    }
+    return out;
+  }
+
+  // ---------- State ----------
+
+  const STORE_KEY = 'teamshuffle.v1';
+  const LISTS_KEY = 'teamshuffle.lists.v1';
+  const state = { names: [], mode: 'size', size: 2, count: 2, listName: '' };
+
+  let lists = [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(LISTS_KEY) || '[]');
+    if (Array.isArray(saved)) {
+      lists = saved.filter(l => l && typeof l.name === 'string' && Array.isArray(l.names));
+    }
+  } catch (e) { /* fresh start */ }
+
+  function persistLists() {
+    try { localStorage.setItem(LISTS_KEY, JSON.stringify(lists)); } catch (e) { /* private mode */ }
+  }
+
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw === null) {
+      state.names = DEFAULT_NAMES.slice(); // first visit: start with the example list
+    } else {
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved.names)) state.names = saved.names.filter(n => typeof n === 'string');
+      if (saved.mode === 'count') state.mode = 'count';
+      if (Number.isInteger(saved.size) && saved.size >= 2 && saved.size <= 20) state.size = saved.size;
+      if (Number.isInteger(saved.count) && saved.count >= 2 && saved.count <= 20) state.count = saved.count;
+      if (typeof saved.listName === 'string') state.listName = saved.listName;
+    }
+  } catch (e) { /* fresh start */ }
+
+  function persist() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  }
+
+  // ---------- Elements ----------
+
+  const $ = id => document.getElementById(id);
+  const chipsEl = $('chips'), inputEl = $('name-input'), countEl = $('name-count');
+  const clearBtn = $('clear-btn'), previewEl = $('preview'), goBtn = $('go-btn');
+  const resultsEl = $('results'), summaryEl = $('summary'), teamListEl = $('team-list');
+  const rowSize = $('row-size'), rowCount = $('row-count');
+  const sizeValue = $('size-value'), countValue = $('count-value');
+  const MAX_SIZE = 20;
+  const shareBtn = $('share-btn'), toastEl = $('toast');
+  const saveBtn = $('save-btn'), saveForm = $('save-form');
+  const listNameInput = $('list-name-input'), savedPanel = $('saved-panel'), savedListsEl = $('saved-lists');
+
+  // ---------- Names ----------
+
+  function addFromInput() {
+    const parsed = parseNames(inputEl.value);
+    if (!parsed.length) return;
+    state.names.push(...parsed);
+    inputEl.value = '';
+    persist();
+    renderControls();
+    refreshResults(true);
+  }
+
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addFromInput(); }
+  });
+  inputEl.addEventListener('input', () => {
+    // Typing a comma (or pasting a list) commits everything before the last separator.
+    if (/[,;\n]/.test(inputEl.value)) {
+      const endsOpen = !/[,;\n]\s*$/.test(inputEl.value);
+      const parts = parseNames(inputEl.value);
+      const keep = endsOpen ? parts.pop() : '';
+      if (parts.length) {
+        state.names.push(...parts);
+        persist();
+      }
+      inputEl.value = keep || '';
+      renderControls();
+      if (parts.length) refreshResults(true);
+    }
+  });
+  $('add-btn').addEventListener('click', () => { addFromInput(); inputEl.focus(); });
+
+  clearBtn.addEventListener('click', () => {
+    state.names = [];
+    state.listName = '';
+    persist();
+    renderSaved();
+    resultsEl.hidden = true;
+    goBtn.textContent = 'Go';
+    renderControls();
+    inputEl.focus();
+  });
+
+  chipsEl.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    state.names.splice(Number(chip.dataset.index), 1);
+    persist();
+    renderControls();
+    refreshResults(true);
+  });
+
+  // ---------- Saved lists ----------
+
+  saveBtn.addEventListener('click', () => {
+    saveForm.hidden = !saveForm.hidden;
+    if (!saveForm.hidden) {
+      listNameInput.value = state.listName || '';
+      listNameInput.focus();
+    }
+  });
+
+  function saveList() {
+    const name = listNameInput.value.trim();
+    if (!name) { toast('Give the list a name first'); listNameInput.focus(); return; }
+    const existing = lists.findIndex(l => l.name === name);
+    const entry = { name, names: state.names.slice() };
+    if (existing >= 0) lists[existing] = entry; else lists.push(entry);
+    state.listName = name;
+    persist();
+    persistLists();
+    saveForm.hidden = true;
+    renderSaved();
+    toast(`${existing >= 0 ? 'Updated' : 'Saved'} “${name}” — ${entry.names.length} names`);
+  }
+  $('save-confirm').addEventListener('click', saveList);
+  listNameInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); saveList(); }
+  });
+
+  function renderSaved() {
+    savedPanel.hidden = lists.length === 0;
+    savedListsEl.innerHTML = lists.map((l, i) =>
+      `<button class="saved-pill" data-index="${i}"${l.name === state.listName ? ' data-active' : ''}>` +
+      `<span>${esc(l.name)}</span><span class="n">×${l.names.length}</span><span class="x">✕</span></button>`
+    ).join('');
+  }
+
+  savedListsEl.addEventListener('click', e => {
+    const pill = e.target.closest('.saved-pill');
+    if (!pill) return;
+    const i = Number(pill.dataset.index);
+    if (e.target.closest('.x')) {
+      const name = lists[i].name;
+      lists.splice(i, 1);
+      if (state.listName === name) { state.listName = ''; persist(); }
+      persistLists();
+      renderSaved();
+      toast(`Deleted “${name}”`);
+      return;
+    }
+    state.names = lists[i].names.slice();
+    state.listName = lists[i].name;
+    persist();
+    renderControls();
+    renderSaved();
+    refreshResults(true);
+    toast(`Loaded “${lists[i].name}” — ${state.names.length} names`);
+  });
+
+  // ---------- Mode & size ----------
+
+  function setMode(mode) {
+    state.mode = mode;
+    persist();
+    renderControls();
+    refreshResults(false);
+  }
+  [[rowSize, 'size'], [rowCount, 'count']].forEach(([row, mode]) => {
+    row.addEventListener('click', e => {
+      if (!e.target.closest('button')) setMode(mode);
+    });
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMode(mode); }
+    });
+  });
+
+  // Using a row's stepper also makes that row the active mode.
+  $('size-minus').addEventListener('click', () => {
+    state.mode = 'size';
+    state.size = Math.max(2, state.size - 1);
+    persist();
+    renderControls();
+    refreshResults(false);
+  });
+  $('size-plus').addEventListener('click', () => {
+    state.mode = 'size';
+    state.size = Math.min(MAX_SIZE, state.size + 1);
+    persist();
+    renderControls();
+    refreshResults(false);
+  });
+
+  $('count-minus').addEventListener('click', () => {
+    state.mode = 'count';
+    state.count = Math.max(2, state.count - 1);
+    persist();
+    renderControls();
+    refreshResults(false);
+  });
+  $('count-plus').addEventListener('click', () => {
+    state.mode = 'count';
+    state.count = Math.min(maxTeams(), state.count + 1);
+    persist();
+    renderControls();
+    refreshResults(false);
+  });
+
+  function maxTeams() {
+    return Math.max(2, Math.min(20, state.names.length || 20));
+  }
+
+  // ---------- Rendering ----------
+
+  function esc(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  function previewText() {
+    const n = state.names.length;
+    if (n < 2) return 'Add at least 2 names to shuffle.';
+    if (state.mode === 'size') {
+      const s = state.size;
+      const full = Math.floor(n / s), rem = n % s;
+      const teams = full + (rem ? 1 : 0);
+      if (!rem) return `<strong>${n} names</strong> → <strong>${teams} team${teams > 1 ? 's' : ''}</strong> of ${s}`;
+      if (!full) return `<strong>${n} names</strong> → <strong>1 short team</strong> of ${rem}`;
+      return `<strong>${n} names</strong> → <strong>${teams} teams</strong> — ${full} of ${s}, one short with ${rem}`;
+    }
+    const k = Math.min(state.count, n);
+    const base = Math.floor(n / k), rem = n % k;
+    if (!rem) return `<strong>${n} names</strong> → <strong>${k} teams</strong> of ${base}`;
+    return `<strong>${n} names</strong> → <strong>${k} teams</strong> — ${rem} of ${base + 1}, ${k - rem} short with ${base}`;
+  }
+
+  function renderControls() {
+    chipsEl.innerHTML = state.names.map((name, i) =>
+      `<button class="chip" data-index="${i}" aria-label="Remove ${esc(name)}">` +
+      `<span>${esc(name)}</span><span class="x">✕</span></button>`
+    ).join('');
+    countEl.textContent = `${state.names.length} name${state.names.length === 1 ? '' : 's'}`;
+    clearBtn.hidden = state.names.length === 0;
+    saveBtn.hidden = state.names.length === 0;
+    if (state.names.length === 0) saveForm.hidden = true;
+
+    rowSize.toggleAttribute('data-active', state.mode === 'size');
+    rowCount.toggleAttribute('data-active', state.mode === 'count');
+    rowSize.setAttribute('aria-checked', String(state.mode === 'size'));
+    rowCount.setAttribute('aria-checked', String(state.mode === 'count'));
+
+    sizeValue.textContent = state.size;
+    $('size-minus').disabled = state.size <= 2;
+    $('size-plus').disabled = state.size >= MAX_SIZE;
+    state.count = Math.min(state.count, maxTeams());
+    countValue.textContent = state.count;
+    $('count-minus').disabled = state.count <= 2;
+    $('count-plus').disabled = state.count >= maxTeams();
+
+    previewEl.innerHTML = previewText();
+    goBtn.disabled = state.names.length < 2;
+  }
+
+  // ---------- Deal ----------
+
+  let lastTeams = [];
+  let lastOrder = [];
+
+  function splitOrder() {
+    lastTeams = enforceKeepApart(state.mode === 'size'
+      ? splitBySize(lastOrder, state.size)
+      : splitByCount(lastOrder, Math.min(state.count, lastOrder.length)));
+  }
+
+  function deal() {
+    lastOrder = shuffle(state.names);
+    splitOrder();
+    renderResults();
+  }
+
+  // Keep visible results in sync with the controls: a settings change
+  // regroups the same draw; a name change forces a fresh shuffle.
+  function refreshResults(fresh) {
+    if (resultsEl.hidden) return;
+    if (state.names.length < 2) {
+      resultsEl.hidden = true;
+      goBtn.textContent = 'Go';
+      return;
+    }
+    if (fresh || lastOrder.length !== state.names.length) lastOrder = shuffle(state.names);
+    splitOrder();
+    renderResults();
+  }
+
+  function renderResults() {
+    const teams = lastTeams;
+    const maxSize = Math.max(...teams.map(t => t.length));
+    summaryEl.textContent = state.mode === 'size'
+      ? `${state.names.length} names · teams of ${state.size}`
+      : `${state.names.length} names · ${teams.length} teams`;
+
+    teamListEl.innerHTML = teams.map((team, i) => {
+      const short = team.length < maxSize;
+      const members = team.map(esc).join('<span class="sep">–</span>');
+      return `<div class="team-card deal" style="--hue: var(--team-${(i % 6) + 1}); --i: ${i}; margin-bottom: 10px;">` +
+        `<div class="badge">${i + 1}</div>` +
+        `<div class="team-label">Team ${i + 1}${short ? '<span class="short-tag">short</span>' : ''}</div>` +
+        `<div class="size-tag">×${team.length}</div>` +
+        `<div class="members">${members}</div>` +
+        `</div>`;
+    }).join('');
+
+    shareBtn.hidden = !navigator.share;
+    const firstDeal = resultsEl.hidden;
+    resultsEl.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      teamListEl.querySelectorAll('.deal').forEach(el => el.classList.add('in'));
+    }));
+    if (firstDeal) resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  goBtn.addEventListener('click', () => {
+    deal();
+    goBtn.textContent = 'Shuffle again';
+  });
+
+  // ---------- Copy & share ----------
+
+  function resultText() {
+    const head = state.mode === 'size'
+      ? `Teams of ${state.size} — ${state.names.length} names`
+      : `${lastTeams.length} teams — ${state.names.length} names`;
+    return head + '\n' + lastTeams.map((t, i) => `Team ${i + 1}: ${t.join(' – ')}`).join('\n');
+  }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => toastEl.classList.remove('show'), 1600);
+  }
+
+  $('copy-btn').addEventListener('click', async () => {
+    const text = resultText();
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    toast('Copied');
+  });
+
+  shareBtn.addEventListener('click', () => {
+    navigator.share({ title: 'Team Shuffle', text: resultText() }).catch(() => {});
+  });
+
+  // ---------- Self-test (?selftest) ----------
+
+  function runSelfTest() {
+    const checks = [];
+    const ok = (name, cond) => checks.push((cond ? 'PASS ' : 'FAIL ') + name);
+
+    const six = ['a', 's', 'f', 'g', 'h', 'j'];
+    let t = splitBySize(six, 2);
+    ok('6 names in 2s → 3 teams', t.length === 3 && t.every(x => x.length === 2));
+    t = splitBySize(six, 3);
+    ok('6 names in 3s → 2 teams', t.length === 2 && t.every(x => x.length === 3));
+    t = splitBySize(['a', 's', 'f', 'g', 'h', 'j', 'k'], 2);
+    ok('7 names in 2s → last team short', t.length === 4 && t[3].length === 1);
+    t = splitBySize(['a', 's', 'f', 'g', 'h', 'j', 'k'], 3);
+    ok('7 names in 3s → 3,3,1', t.map(x => x.length).join() === '3,3,1');
+    t = splitByCount(['a', 's', 'f', 'g', 'h', 'j', 'k'], 3);
+    ok('7 names in 3 teams → 3,2,2', t.map(x => x.length).join() === '3,2,2');
+    t = splitByCount(six, 3);
+    ok('6 names in 3 teams → 2,2,2', t.map(x => x.length).join() === '2,2,2');
+    const shuffled = shuffle(six);
+    ok('shuffle keeps every name', shuffled.slice().sort().join() === six.slice().sort().join());
+    ok('parse commas & newlines', parseNames('a, s\nf;g,,h').join() === 'a,s,f,g,h');
+    ok('keep-apart fuzzy match', matchesKeepApartName('Pyush', 'Piyush') &&
+      matchesKeepApartName('Danesh', 'Danish') && !matchesKeepApartName('Manish', 'Danish'));
+    t = enforceKeepApart([['Piyush', 'Danish'], ['a', 's']]);
+    ok('keep-apart pair split up', !t.some(x => keepApartConflict(x)) &&
+      t.flat().sort().join() === ['Danish', 'Piyush', 'a', 's'].join());
+
+    const failed = checks.some(c => c.startsWith('FAIL'));
+    const el = document.createElement('div');
+    el.className = 'selftest ' + (failed ? 'fail' : 'pass');
+    el.textContent = 'SELF-TEST ' + (failed ? 'FAILED' : 'PASSED') + '\n' + checks.join('\n');
+    document.querySelector('.app').prepend(el);
+  }
+
+  // ---------- Init ----------
+
+  renderControls();
+  renderSaved();
+  if (location.search.includes('selftest')) runSelfTest();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
