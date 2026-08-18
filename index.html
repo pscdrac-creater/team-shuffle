@@ -104,6 +104,30 @@
     font-size: 14px;
   }
 
+  /* Keep-apart switch. Styled as a plain hairline divider so it sits
+     quietly in the layout; the padding gives it a real tap target. */
+  .rule-toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    margin: -5px 0;
+    padding: 6px 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rule-toggle::before {
+    content: "";
+    display: block;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--line);
+  }
+  .rule-toggle:focus { outline: none; }
+  .rule-toggle:focus-visible::before { background: var(--ink-soft); }
+
   .panel {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -498,7 +522,7 @@
 <main class="app">
   <header>
     <h1 class="wordmark">Team <span class="accent">Shuffle</span></h1>
-    <p class="tagline">Type names, hit GO, get fair random teams.</p>
+    <p class="tagline">Type names, hit GO<span id="tagline-comma">,</span> get fair random teams.</p>
   </header>
 
   <section class="panel">
@@ -528,6 +552,8 @@
     <div class="panel-head"><span class="label">Saved lists</span><span class="count">tap to load</span></div>
     <div class="saved-lists" id="saved-lists"></div>
   </section>
+
+  <button class="rule-toggle" id="rule-toggle" aria-pressed="false" aria-label="Keep-apart rule"></button>
 
   <section class="panel">
     <div class="panel-head"><span class="label">Split into</span></div>
@@ -620,6 +646,8 @@
   // shuffle, members are swapped between teams until every pair is
   // separated. Matching is fuzzy — case, punctuation, doubled letters,
   // and small misspellings of either name count as the same person.
+  // Off by default; the hairline button above "Split into" turns it on
+  // (state.keepApart), and the comma after "hit GO" hides while it runs.
   const KEEP_APART = [['Piyush', 'Danish']];
 
   // Example list shown the first time the app is opened.
@@ -688,7 +716,7 @@
 
   const STORE_KEY = 'teamshuffle.v1';
   const LISTS_KEY = 'teamshuffle.lists.v1';
-  const state = { names: [], mode: 'size', size: 2, count: 2, listName: '' };
+  const state = { names: [], mode: 'size', size: 2, count: 2, listName: '', keepApart: false };
 
   let lists = [];
   try {
@@ -713,6 +741,7 @@
       if (Number.isInteger(saved.size) && saved.size >= 2 && saved.size <= 20) state.size = saved.size;
       if (Number.isInteger(saved.count) && saved.count >= 2 && saved.count <= 20) state.count = saved.count;
       if (typeof saved.listName === 'string') state.listName = saved.listName;
+      state.keepApart = saved.keepApart === true;
     }
   } catch (e) { /* fresh start */ }
 
@@ -730,6 +759,7 @@
   const sizeValue = $('size-value'), countValue = $('count-value');
   const MAX_SIZE = 20;
   const shareBtn = $('share-btn'), toastEl = $('toast');
+  const ruleToggle = $('rule-toggle'), taglineComma = $('tagline-comma');
   const saveBtn = $('save-btn'), saveForm = $('save-form');
   const listNameInput = $('list-name-input'), savedPanel = $('saved-panel'), savedListsEl = $('saved-lists');
 
@@ -947,15 +977,32 @@
     goBtn.disabled = state.names.length < 2;
   }
 
+  // ---------- Keep-apart switch ----------
+
+  // The only visible sign that the rule is on: the tagline's comma after
+  // "hit GO" is hidden while it applies.
+  function renderRuleToggle() {
+    taglineComma.hidden = state.keepApart;
+    ruleToggle.setAttribute('aria-pressed', String(state.keepApart));
+  }
+
+  ruleToggle.addEventListener('click', () => {
+    state.keepApart = !state.keepApart;
+    persist();
+    renderRuleToggle();
+    refreshResults(false);
+  });
+
   // ---------- Deal ----------
 
   let lastTeams = [];
   let lastOrder = [];
 
   function splitOrder() {
-    lastTeams = enforceKeepApart(state.mode === 'size'
+    const teams = state.mode === 'size'
       ? splitBySize(lastOrder, state.size)
-      : splitByCount(lastOrder, Math.min(state.count, lastOrder.length)));
+      : splitByCount(lastOrder, Math.min(state.count, lastOrder.length));
+    lastTeams = state.keepApart ? enforceKeepApart(teams) : teams;
   }
 
   function deal() {
@@ -1073,6 +1120,34 @@
     ok('keep-apart pair split up', !t.some(x => keepApartConflict(x)) &&
       t.flat().sort().join() === ['Danish', 'Piyush', 'a', 's'].join());
 
+    // Switch behaviour. Everything touched here is restored afterwards.
+    const was = { on: state.keepApart, order: lastOrder, teams: lastTeams, mode: state.mode, size: state.size };
+    state.keepApart = false;
+    renderRuleToggle();
+    const commaShown = !taglineComma.hidden;
+    ruleToggle.click();
+    ok('switch on hides the tagline comma', commaShown && state.keepApart && taglineComma.hidden);
+    ruleToggle.click();
+    ok('switch off restores the comma', !state.keepApart && !taglineComma.hidden);
+
+    lastOrder = ['Piyush', 'Danish', 'a', 's'];
+    state.mode = 'size';
+    state.size = 2;
+    state.keepApart = false;
+    splitOrder();
+    ok('switch off leaves the split untouched', lastTeams[0].join() === 'Piyush,Danish');
+    state.keepApart = true;
+    splitOrder();
+    ok('switch on separates the pair', !lastTeams.some(x => keepApartConflict(x)));
+
+    state.keepApart = was.on;
+    lastOrder = was.order;
+    lastTeams = was.teams;
+    state.mode = was.mode;
+    state.size = was.size;
+    persist();
+    renderRuleToggle();
+
     const failed = checks.some(c => c.startsWith('FAIL'));
     const el = document.createElement('div');
     el.className = 'selftest ' + (failed ? 'fail' : 'pass');
@@ -1084,6 +1159,7 @@
 
   renderControls();
   renderSaved();
+  renderRuleToggle();
   if (location.search.includes('selftest')) runSelfTest();
 </script>
 
