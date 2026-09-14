@@ -476,6 +476,19 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%); }
 
+  .foot {
+    margin: 4px 0 0;
+    text-align: center;
+    font-size: 12.5px;
+  }
+  .foot a {
+    display: inline-block;
+    padding: 8px 10px;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .foot a:active { color: var(--ink); }
+
   .selftest {
     padding: 12px 14px;
     border-radius: 12px;
@@ -566,6 +579,10 @@
     </div>
     <div id="team-list"></div>
   </section>
+
+  <footer class="foot">
+    <a href="https://pscdrac-creater.github.io/team-shuffle/privacy.html" target="_blank" rel="noopener">Privacy policy</a>
+  </footer>
 </main>
 
 <div class="toast" id="toast"></div>

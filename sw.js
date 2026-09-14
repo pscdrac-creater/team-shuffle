@@ -1,5 +1,5 @@
-const CACHE = 'teamshuffle-v7';
-const ASSETS = ['./', './index.html', './manifest.webmanifest',
+const CACHE = 'teamshuffle-v8';
+const ASSETS = ['./', './index.html', './privacy.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
